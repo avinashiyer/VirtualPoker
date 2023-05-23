@@ -1,6 +1,6 @@
-from itertools import product
-from random import shuffle
-from card_enums import Suit,Values
+# One off script for converting specifically formatted ascii art into list declarations of the same art  
+
+from card_enums import Values,Suit
 
 SPADE = """\
 |       /\     |
@@ -31,7 +31,6 @@ DIAMOND = """\
 |       `.  .' |
 |         \/   |"""
 
-BOUNDRY = "+──────────────+"
 
 ACE = """\
 |     /\       |
@@ -137,48 +136,48 @@ TWO = """\
 |  / /_        |
 | |____|       |"""
 
-# BOUNDRY
-# val  * 6
-# suit * 5
-# BOUNDRY
-_CARD_HEIGHT = 13
-_SUITS = (SPADE, CLUB, DIAMOND, HEART)
-_VALS = (ACE, KING, QUEEN, JACK, TEN, NINE, EIGHT,
-         SEVEN, SIX, FIVE, FOUR, THREE, TWO)
+# Maps suit card_enums to string constants
+_SUIT_TO_STRING = {Suit.CLUB: CLUB,
+                   Suit.DIAMOND: DIAMOND,
+                   Suit.HEART: HEART,
+                   Suit.SPADE: SPADE}
 
-_SUIT_DICT = {Suit.CLUB:CLUB,Suit.DIAMOND:DIAMOND,Suit.HEART:HEART,Suit.SPADE:SPADE}
-
-
-def make_const(val, suit):
-    return f"{BOUNDRY}\n{val}\n{suit}\n{BOUNDRY}"
-
-
-def print_const_list(cards):
-    '''
-    Prints a list of cards horizontally alligned
-    ASSERT: cards is a list of string literals, each literal being the 
-    full ASCII representation of a card, literals should have \n seperators 
-    '''
-    exploded = [card.splitlines() for card in cards]
-    for i in range(_CARD_HEIGHT):
-        for c in exploded:
-            print(c[i], end="")
-        print()
+# Maps val card_enums to string constants
+_VAL_TO_STRING = {Values.TWO: TWO,
+                  Values.THREE: THREE,
+                  Values.FOUR: FOUR,
+                  Values.FIVE: FIVE,
+                  Values.SIX: SIX,
+                  Values.SEVEN: SEVEN,
+                  Values.EIGHT: EIGHT,
+                  Values.NINE: NINE,
+                  Values.TEN: TEN,
+                  Values.JACK: JACK,
+                  Values.QUEEN: QUEEN,
+                  Values.KING: KING,
+                  Values.ACE: ACE}
 
 
-def main():
-    deck = product(_SUITS, _VALS)
-    deck2 = []
-    for x in deck:
-        deck2.append(make_const(x[1], x[0]))
-    shuffle(deck2)
-    prev = 0
-    for i in range(5,52,5):
-        print_const_list(deck2[prev:i])
-        prev = i
-    print_const_list(deck2[prev:])
-        
+def pretty_repr(ls,f):
+    f.write('[\n')
+    for s in ls:
+        f.write('\t\'')
+        f.write(s)
+        f.write('\',\n')
+    f.write(']\n')
 
+f = open("scratch.txt","wt+")
+f.write("------------VALS-----------\n\n")
+for k,v in _VAL_TO_STRING.items():
+    f.write(k.name)
+    f.write(' = ')
+    pretty_repr(v.splitlines(), f)
+    f.write('\n')
 
-if __name__ == '__main__':
-    main()
+f.write("------------SUITS-------------\n\n")
+for k,v in _SUIT_TO_STRING.items():
+    f.write(k.name)
+    f.write(" = ")
+    pretty_repr(v.splitlines(), f)
+    f.write("\n")
+f.close()    
