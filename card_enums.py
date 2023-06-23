@@ -1,4 +1,4 @@
-from enum import Flag, IntEnum, auto, Enum
+from enum import Flag, IntEnum, IntFlag, auto, Enum
 
 
 class Suit(IntEnum):
@@ -24,7 +24,7 @@ class Values(IntEnum):
     ACE = 14
 
 
-class Hands(Flag):
+class Hands(IntFlag):
     PAIR = auto()
     TWO_PAIR = auto()
     THREE_O_KIND = auto()
@@ -74,3 +74,18 @@ class Hands(Flag):
             cls.ROYAL_FLUSH: 250
         }
         return multis
+    
+    @classmethod
+    def get_strings(cls):
+        res = {
+            cls.TWO_PAIR:'TWO PAIR',
+            cls.THREE_O_KIND:'THREE OF A KIND',
+            cls.FOUR_O_KIND:'FOUR OF A KIND',
+            cls.STRAIGHT:'STRAIGHT',
+            cls.STRAIGHT_FLUSH:'STRAIGHT FLUSH',
+            cls.FLUSH:'FLUSH',
+            cls.ROYAL_FLUSH:'ROYAL FLUSH',
+            cls.FULL_HOUSE:'FULL HOUSE',
+            0:'WHOLE LOT OF NOTHING'
+        }
+        return res
