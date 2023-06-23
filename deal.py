@@ -126,3 +126,8 @@ class Deal:
             else:
                 flags = Hands.STRAIGHT_FLUSH
         return flags
+
+
+    #Testing Testing :x
+    :x
+
