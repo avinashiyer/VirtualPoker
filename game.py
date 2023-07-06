@@ -5,50 +5,56 @@ import poker
 from card_enums import Hands, Suit, Values
 from deal import Deal
 from os import get_terminal_size
+from enum import Enum, auto
 
 
-class Game:
+class Game():
     MULTIS = Hands.get_multis()
     STRINGS = Hands.get_strings()
+    # Hard coded for now but child class could change hand sizes for different flavors of poker
     HAND_SIZE = 5
     CARD_WIDTH = len(card_strings.BOUNDRY)
-
+    START = 0
+    DEALT = 1
+    TRADED = 2 
+    
+    
     def __init__(self) -> None:
         self.money = 100
         self.deck = poker.Deck()
         self.deal = Deal()
-        self.state = 0
+        self.state = Game.START
 
     def deal_hand(self):
         hand = [self.deck.pop() for _ in range(Game.HAND_SIZE)]
         self.deal.add_cards(hand)
-        self.state = 1
-        self.print_hand()
+        self.state = Game.DEALT
 
     def print_hand(self):
         print(self.deal)
         positions_string = []
         for pos in range(len(self.deal.deal)):
             number = f"({pos+1})"
+            # creates a string of the form: "      (1)      "
             positions_string.append(f"{number:^{Game.CARD_WIDTH}}")
-        positions_string = "".join(positions_string)
-        print(positions_string)
-        flags = self.deal.search_hand()
-        if self.state==1:
-            print(f'CURRENT HAND: {Game.STRINGS[flags]}')
-        elif self.state == 2:
+        print("".join(positions_string))
+        if self.state==Game.DEALT:
+            print(f'CURRENT HAND: {self.deal.hand}')
+        elif self.state == Game.TRADED:
             self.print_result()
         else:
             print(f'Called print hand in invalid state. State: {self.state}')
 
+    def print_result(self):
+        print(f"END RESULT IS:\n{self.deal.hand:^{get_terminal_size()[0]}}")
+    
     def trade_in(self, positions: list[int]):
         removed = self.deal.remove_cards(positions)
-        self.deck.extend(removed)
         self.deck.shuffle_deck()
         new_cards = [self.deck.pop() for _ in range(len(positions))]
         self.deal.add_cards(new_cards)
+        self.deck.extend(removed)
         self.state = 2
-        self.print_hand()
 
     @staticmethod
     def validate_and_extract_input(input: str) -> list[int] | None:
@@ -69,9 +75,6 @@ class Game:
             return None
         return [int(tok)-1 for tok in split]
     
-    def print_result(self):
-        flags = self.deal.search_hand()
-        print(f"END RESULT IS:\n{self.STRINGS[flags]:^{get_terminal_size()[0]}}")
 
     def reset(self):
         self.deck.extend(self.deal.deal)
@@ -90,7 +93,6 @@ def ask_for_input():
         if pos:
             return pos
 
-
 def main():
     g = Game()
     print("Welcome bubby :)")
@@ -99,8 +101,10 @@ def main():
         print(f'Round {counter}')
         g.deck.shuffle_deck()
         g.deal_hand()
+        g.print_hand()
         pos = ask_for_input()
         g.trade_in(pos)
+        g.print_hand()
         input("Press enter to start a new round")
         g.reset()
         counter += 1

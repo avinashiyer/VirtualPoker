@@ -1,4 +1,4 @@
-from enum import Flag, IntEnum, IntFlag, auto, Enum
+from enum import  IntEnum, IntFlag, auto 
 
 
 class Suit(IntEnum):
@@ -25,6 +25,7 @@ class Values(IntEnum):
 
 
 class Hands(IntFlag):
+    NOTHING = 0
     PAIR = auto()
     TWO_PAIR = auto()
     THREE_O_KIND = auto()
@@ -64,14 +65,15 @@ class Hands(IntFlag):
     def get_multis(cls):
         # TODO: Move this to points class when implemented
         multis = {
-            cls.TWO_PAIR: 2,
-            cls.THREE_O_KIND: 3,
-            cls.STRAIGHT: 4,
-            cls.FLUSH: 6,
-            cls.FULL_HOUSE: 9,
-            cls.FOUR_O_KIND: 25,
-            cls.STRAIGHT_FLUSH: 50,
-            cls.ROYAL_FLUSH: 250
+            cls.NOTHING : 0,
+            cls.TWO_PAIR : 2,
+            cls.THREE_O_KIND : 3,
+            cls.STRAIGHT : 4,
+            cls.FLUSH : 6,
+            cls.FULL_HOUSE : 9,
+            cls.FOUR_O_KIND : 25,
+            cls.STRAIGHT_FLUSH : 50,
+            cls.ROYAL_FLUSH : 800
         }
         return multis
     
@@ -81,11 +83,11 @@ class Hands(IntFlag):
             cls.TWO_PAIR:'TWO PAIR',
             cls.THREE_O_KIND:'THREE OF A KIND',
             cls.FOUR_O_KIND:'FOUR OF A KIND',
+            cls.FULL_HOUSE:'FULL HOUSE',
             cls.STRAIGHT:'STRAIGHT',
             cls.STRAIGHT_FLUSH:'STRAIGHT FLUSH',
             cls.FLUSH:'FLUSH',
             cls.ROYAL_FLUSH:'ROYAL FLUSH',
-            cls.FULL_HOUSE:'FULL HOUSE',
-            0:'WHOLE LOT OF NOTHING'
+            cls.NOTHING:'WHOLE LOT OF NOTHING'
         }
         return res

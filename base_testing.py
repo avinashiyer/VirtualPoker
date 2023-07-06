@@ -169,7 +169,7 @@ class TestBase(unittest.TestCase):
         ]
         shuffle(cards)
         d = Deal(cards)
-        self.assertEqual(d.search_hand(), Hands(0))
+        self.assertEqual(d.search_hand(), Hands.NOTHING)
 
     def test_no_hand_2(self):
         suits = cycle(Suit)
@@ -177,7 +177,7 @@ class TestBase(unittest.TestCase):
         cards = [Card(val,st) for val,st in zip(vals,suits)]
         shuffle(cards)
         d = Deal(cards)
-        self.assertEqual(d.search_hand(), Hands(0))
+        self.assertEqual(d.search_hand(), Hands.NOTHING)
     
     def test_three_of_a_kind(self):
         cards = [

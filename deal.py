@@ -32,7 +32,18 @@ class Deal:
     def __init__(self, cards=[]):
         self.deal: list[Card | None] = cards
         self.trade_pos: list[int] = []
-        
+        self._hand = None
+
+    @property
+    def hand(self):
+        """Hand that this deal Contains"""
+        if self._hand is None:
+            try:
+                self._hand = self.search_hand()
+            except (AssertionError,ValueError):
+                return Hands.NOTHING
+        return self._hand
+            
     def __str__(self):
         return stringify_card_list(self.deal)
     
@@ -49,6 +60,7 @@ class Deal:
             self.deal[pos] = to_add.pop()
         self.deal.extend(to_add)
         self.trade_pos.clear()
+        self._hand = None
 
     def remove_cards(self, positions: list[int]):
         '''
@@ -61,29 +73,32 @@ class Deal:
         for pos in positions:
             to_return.append(self.deal[pos])
             self.deal[pos] = None
+        self._hand = None
         return to_return
 
     @staticmethod
     def pairs_search(pairs: Counter) -> Hands:
         assert pairs.total() == 5
         size = len(pairs)
-        # Counter.most_common(1) returns singleton list with tuple (value,count)
+        # Counter.most_common(1) returns singleton list with tuple, i.e. [(value,count),]
         _,most_common_count = pairs.most_common(1)[0]
         if size > 3:
             # only one pair return empty flag
-            return Hands(0)
+            return Hands.NOTHING
         elif size == 3:
+            # Size of 3 implies Two cases: [(x,x,x),y,z] or [(x,x),(y,y),z]
             if most_common_count == 3:
                 return Hands.THREE_O_KIND
             else:
                 return Hands.TWO_PAIR
         elif size == 2:
+            # Size of two implies two cases: [(x,x,x,x),y] or [(x,x,x),(y,y)]
             if most_common_count == 4:
                 return Hands.FOUR_O_KIND
             else:
                 return Hands.FULL_HOUSE
         else:
-            # Should be unreachable
+            # Reachable only if passed in hand breaks assumption of 4 cards per value
             raise ValueError(f"Illegitimate hand passed to pairs_search\n{pairs}")
                 
 
@@ -92,32 +107,37 @@ class Deal:
         '''
         Assumes passed list is sorted ascending by value
         '''
+        
+        #A hand is a straight iff when the lowest value is 4 ranks below
+        # the highest. Proof: I made it up (Brute forced it)
         if sHand[0].value == sHand[-1].value-4:
             return Hands.STRAIGHT
         elif sHand == Deal._low_straight:
             return Hands.STRAIGHT
         else:
-            return Hands(0)
+            return Hands.NOTHING
 
     @staticmethod
     def flush_search(hand):
         first_suit = hand[0].suit
         for c in hand[1:]:
             if c.suit != first_suit:
-                return Hands(0)
+                return Hands.NOTHING
         return Hands.FLUSH
 
-    def search_hand(self):
-        assert len(self.deal) == 5
-        hand: list[Card] = [card for card in self.deal if card]
-        if len(self.deal) != len(hand):
-            raise ValueError("None value in list passed to search hand")
-        sHand:list[Card] = sorted(hand)
-        pairs:Counter = Counter([c.value for c in sHand])
+    @staticmethod
+    def search_hand_static(deal:list[Card]):
+        '''
+        Takes in a list of cards and searches for hands within. 
+        Seperated from instance method to remove overhead of 
+        deal objects and checks when needed.
+        '''
+        pairs:Counter = Counter([c.value for c in deal])
         flags: Hands = Deal.pairs_search(pairs)
         if len(pairs) < 5:
             # Any pairs preclude other hands
             return flags
+        sHand:list[Card] = sorted(deal)
         flags = Deal.straight_search(sHand)
         flags |= Deal.flush_search(sHand)
         if Hands.FLUSH in flags and Hands.STRAIGHT in flags:
@@ -126,8 +146,17 @@ class Deal:
             else:
                 flags = Hands.STRAIGHT_FLUSH
         return flags
-
-
-    #Testing Testing :x
-    :x
-
+        
+    
+    
+    
+    def search_hand(self):
+        '''
+        Instance method of search hand that adds checks for assumptions.
+        Better to use this one than the static method
+        '''
+        assert len(self.deal) == 5
+        hand: list[Card] = [card for card in self.deal if card]
+        if len(self.deal) != len(hand):
+            raise ValueError("None value in list passed to search hand")
+        return Deal.search_hand_static(hand)
